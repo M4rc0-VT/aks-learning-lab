@@ -1,0 +1,19 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Values.imageName }}-ingress
+  annotations:
+    # This tells K8s: "Hey Nginx Controller, this rule is for you!"
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  ingressClassName: nginx
+  rules:
+  - http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ .Values.imageName }}-service  # <--- Must match your Service Name
+            port:
+              name: service-80 # <--- Connects to the Service Name

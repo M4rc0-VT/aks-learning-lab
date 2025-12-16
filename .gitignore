@@ -1,0 +1,26 @@
+# --- Terraform (CRITICAL SECURITY) ---
+# The .terraform folder contains provider plugins (big binaries)
+.terraform/
+
+# The State File - NEVER PUSH THIS. It contains your passwords.
+*.tfstate
+*.tfstate.backup
+
+# Crash logs and plan files
+crash.log
+*.tfplan
+
+# --- IDE & OS Junk ---
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# --- Helm ---
+# If you package charts, don't push the tarballs
+*.tgz
+
+# --- Secrets (Just in case) ---
+*secret*
+*creds*
+contributor.json

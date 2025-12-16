@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.imageName }}-service
+spec:
+  type: ClusterIP             # FREE (Internal only). No expensive LoadBalancer.
+  selector:
+    app: {{ .Values.imageName }}
+  ports:
+  - name: service-80   # <--- The Service's named handle
+    port: 80
+    targetPort: http-web # <--- Looks for the NAME, not the number

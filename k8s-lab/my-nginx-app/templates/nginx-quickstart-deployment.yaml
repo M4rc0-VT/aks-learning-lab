@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.imageName }}-deployment
+  labels:
+    app: {{ .Values.imageName }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Values.imageName }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.imageName }}
+    spec:
+      containers:
+      - name: {{ .Values.imageName }}
+        image: "{{ .Values.acrDnsName }}/{{ .Values.imageName }}:{{ .Values.imageVersion }}"
+        imagePullPolicy: IfNotPresent
+        ports:
+        - name: http-web       
+          containerPort: 80
+        resources:            # Expert Tip: Always define limits!
+          limits:
+            memory: "128Mi"
+            cpu: "100m"
