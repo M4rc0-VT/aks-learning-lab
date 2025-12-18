@@ -31,7 +31,11 @@ az aks get-credentials --resource-group rg-terraform-lab --name aks-terraform-la
 az acr list --resource-group rg-terraform-lab --query "[].name" --output tsv
 ```
 
+### **Authorize agent**
 
+``` 
+az role assignment create --assignee xxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxx --role Contributor --scope "subscriptions/xxxxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxx/resourceGroups/rg-terraform-lab"
+```
 
 -----
 

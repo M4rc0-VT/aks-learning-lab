@@ -1,0 +1,55 @@
+name: Build and Deploy to AKS
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch: # Allows you to click a button to run it manually
+
+env:
+  ACR_NAME: "acrlearninglabz2kz6" # <--- UPDATE THIS with your actual ACR Name
+  AKS_RESOURCE_GROUP: "rg-terraform-lab"
+  AKS_CLUSTER_NAME: "aks-terraform-lab"
+
+permissions:
+  id-token: write # Required for the "Robot" login (OIDC)
+  contents: read
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      # 1. Checkout the code
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # 2. Login to Azure (The Digital Handshake)
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.AZURE_CREDENTIALS.clientId }}
+          tenant-id: ${{ secrets.AZURE_CREDENTIALS.tenantId }}
+          subscription-id: ${{ secrets.AZURE_CREDENTIALS.subscriptionId }}
+
+      # 3. Login to ACR (The Vault)
+      - name: Login to ACR
+        run: az acr login --name ${{ env.ACR_NAME }}
+
+      # 4. Build and Push Docker Image
+      - name: Build and Push Image
+        run: |
+          cd k8s-lab
+          docker build -t ${{ env.ACR_NAME }}.azurecr.io/my-nginx:${{ github.sha }} .
+          docker push ${{ env.ACR_NAME }}.azurecr.io/my-nginx:${{ github.sha }}
+
+      # 5. Get AKS Credentials
+      - name: Get AKS Credentials
+        run: az aks get-credentials --resource-group ${{ env.AKS_RESOURCE_GROUP --name ${{ env.AKS_CLUSTER_NAME }}
+
+      # 6. Deploy with Helm
+      - name: Deploy to AKS
+        run: |
+          cd k8s-lab
+          helm upgrade --install my-release ./my-nginx-app \
+            --set acrDnsName=${{ env.ACR_NAME }}.azurecr.io \
+            --set imageVersion=${{ github.sha }} \
+            --set imageName=my-nginx
