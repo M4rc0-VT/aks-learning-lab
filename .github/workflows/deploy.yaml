@@ -43,7 +43,7 @@ jobs:
 
       # 5. Get AKS Credentials
       - name: Get AKS Credentials
-        run: az aks get-credentials --resource-group ${{ env.AKS_RESOURCE_GROUP --name ${{ env.AKS_CLUSTER_NAME }}
+        run: az aks get-credentials --resource-group ${{ env.AKS_RESOURCE_GROUP }} --name ${{ env.AKS_CLUSTER_NAME }}
 
       # 6. Deploy with Helm
       - name: Deploy to AKS
