@@ -17,6 +17,13 @@ provider "azurerm" {
   features {} # This empty block is required by the plugin to work
 }
 
+provider "kubernetes" {
+  host                   = azurerm_kubernetes_cluster.aks.kube_config.0.host
+  client_certificate     = base64decode(azurerm_kubernetes_cluster.aks.kube_config.0.client_certificate)
+  client_key             = base64decode(azurerm_kubernetes_cluster.aks.kube_config.0.client_key)
+  cluster_ca_certificate = base64decode(azurerm_kubernetes_cluster.aks.kube_config.0.cluster_ca_certificate)
+}
+
 provider "helm" {
   kubernetes {
     host                   = azurerm_kubernetes_cluster.aks.kube_config.0.host
@@ -110,5 +117,26 @@ resource "helm_release" "ingress_nginx" {
     name  = "controller.service.annotations.service\\.beta\\.kubernetes\\.io/azure-load-balancer-health-probe-request-path"
     value = "/healthz"
   }
+}
+
+# 9. Create a namespace for monitoring tools
+resource "kubernetes_namespace_v1" "monitoring" {
+  metadata {
+    name = "monitoring"
+  }
+}
+
+# 10. Install the Prometheus & Grafana Stack using Helm
+resource "helm_release" "prometheus_stack" {
+  name       = "prometheus-stack"
+  repository = "https://prometheus-community.github.io/helm-charts"
+  chart      = "kube-prometheus-stack"
+  namespace  = kubernetes_namespace_v1.monitoring.metadata[0].name
+
+  # Expert Tip: This stack is HUGE. We increase the timeout so Terraform doesn't panic.
+  timeout    = 600
+  
+  # We set "atomic" to true so if it fails, it cleans up after itself.
+  atomic     = true 
 }
 
