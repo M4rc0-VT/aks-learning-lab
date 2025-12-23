@@ -6,7 +6,7 @@ on:
   workflow_dispatch: # Allows you to click a button to run it manually
 
 env:
-  ACR_NAME: "acrlearninglabz2kz6" # <--- UPDATE THIS with your actual ACR Name
+  ACR_NAME: "acrlearninglabisl9s" # <--- UPDATE THIS with your actual ACR Name
   AKS_RESOURCE_GROUP: "rg-terraform-lab"
   AKS_CLUSTER_NAME: "aks-terraform-lab"
 
