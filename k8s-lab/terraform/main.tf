@@ -67,6 +67,11 @@ resource "azurerm_kubernetes_cluster" "aks" {
     service_cidr        = "10.0.0.0/16"
     dns_service_ip      = "10.0.0.10"
   }
+
+  # Enable the CSI Driver for Key Vault
+  key_vault_secrets_provider {
+    secret_rotation_enabled = true # Auto-update secrets if they change in Azure
+  }
 }
 
 # 5. The Container Registry (Private Vault)
@@ -82,6 +87,12 @@ resource "azurerm_container_registry" "acr" {
 # (Azure requires globally unique names for ACR, so we generate a random suffix)
 resource "random_string" "suffix" {
   length  = 5
+  special = false
+  upper   = false
+}
+
+resource "random_string" "random" {
+  length  = 6
   special = false
   upper   = false
 }
@@ -138,5 +149,44 @@ resource "helm_release" "prometheus_stack" {
   
   # We set "atomic" to true so if it fails, it cleans up after itself.
   atomic     = true 
+}
+
+# 11. Get current client config (to get your Tenant ID)
+data "azurerm_client_config" "current" {}
+
+# 12. Create the Key Vault
+resource "azurerm_key_vault" "vault" {
+  name                        = "kv-learning-lab-${random_string.random.result}" # Unique name
+  location                    = azurerm_resource_group.aks_rg.location
+  resource_group_name         = azurerm_resource_group.aks_rg.name
+  enabled_for_disk_encryption = true
+  tenant_id                   = data.azurerm_client_config.current.tenant_id
+  soft_delete_retention_days  = 7
+  purge_protection_enabled    = false
+
+  sku_name = "standard"
+
+  # Access Policy: Give YOU (the admin) full access so you can create secrets
+  access_policy {
+    tenant_id = data.azurerm_client_config.current.tenant_id
+    object_id = data.azurerm_client_config.current.object_id
+
+    secret_permissions = [
+      "Get", "List", "Set", "Delete", "Purge"
+    ]
+  }
+}
+
+# 13. Give the AKS Cluster (CSI Driver) permission to read the Vault
+resource "azurerm_key_vault_access_policy" "aks_addon_access" {
+  key_vault_id = azurerm_key_vault.vault.id
+  tenant_id    = data.azurerm_client_config.current.tenant_id
+  
+  # This is the specific identity of the CSI Driver Add-on
+  object_id    = azurerm_kubernetes_cluster.aks.key_vault_secrets_provider[0].secret_identity[0].object_id
+
+  secret_permissions = [
+    "Get", "List"
+  ]
 }
 
