@@ -36,7 +36,7 @@ provider "helm" {
 # 3. Our First Resource: A Resource Group
 resource "azurerm_resource_group" "aks_rg" {
   name     = "rg-terraform-lab"
-  location = "North Central US" # Matches your manual region
+  location = "eastus" # Matches your manual region
 }
 
 # 4. The AKS Cluster Resource
@@ -50,7 +50,7 @@ resource "azurerm_kubernetes_cluster" "aks" {
   default_node_pool {
     name       = "default"
     node_count = 1                     # Manual Scale (1 Node)
-    vm_size    = "Standard_D2as_v5"    # The economical choice we found
+    vm_size    = "Standard_D2s_v3"    # The economical choice we found
   }
 
   # Identity: We let Azure manage the credentials (no passwords needed)
