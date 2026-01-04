@@ -1,4 +1,4 @@
 replicaCount: 3
-acrDnsName: acrlearninglabjmzvb.azurecr.io
+acrDnsName: acrlearninglab40t7y.azurecr.io
 imageName: my-nginx
 imageVersion: "v1"

@@ -14,7 +14,11 @@ terraform {
 
 # 2. We configure the Azure Provider
 provider "azurerm" {
-  features {} # This empty block is required by the plugin to work
+  features {
+      resource_group {
+        prevent_deletion_if_contains_resources = false
+      }
+  } # This empty block is required by the plugin to work
 }
 
 provider "kubernetes" {
